@@ -41,7 +41,9 @@ Parse.prototype.getMessages = function(callback, parseClass, ObjectId){
     type: 'GET',
     success: function(data){
       if(data.results.length > 0){
-        callback(data);
+        callback(_.map(data.results, function(v){
+          return v;
+        }));
       }
     },
     error: function(data){
@@ -53,8 +55,8 @@ Parse.prototype.getMessages = function(callback, parseClass, ObjectId){
 Parse.prototype.createdAtFilter = function(){
   if(this.lastTime === undefined){
     this.lastTime = new Date(Date.now());
-    var hours = this.lastTime.getHours();
-    this.lastTime.setHours(hours - 2);
+    var mins = this.lastTime.getMinutes();
+    this.lastTime.setMinutes(mins - 10);
   }
   var currentTime = new Date(Date.now());
   var filterObject = {
@@ -99,9 +101,11 @@ Parse.prototype.sendMessage = function(message, callback, parseClass, ObjectId){
   else if(typeof callback !== 'function'){
     throw "Callback should be a function";
   }
-  var url = this.setcurrentUrl(parseClass, ObjectId);
+  var url = this.setcurrentUrl(parseClass, ObjectId)+'?'+ JSON.stringify(message);
+  console.log(url);
   $.ajax({
     url: url,
+    type:'POST',
     data: JSON.stringify(message),
     contentType: 'application/json',
     success: function(data){

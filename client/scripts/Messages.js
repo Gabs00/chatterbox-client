@@ -52,11 +52,21 @@ MessageList.prototype.removeMessage = function(roomName){
     return this._messages[roomName].shift();    
   }
 };
-
+MessageList.prototype.removeMessageFromTop = function(roomName){
+  if(Array.isArray(this._messages[roomName])){
+    this.length--;
+    return this._messages[roomName].pop();    
+  }
+};
 MessageList.prototype.multipleAdd = function(messageArray){
   _.each(messageArray, function(v){
     this.addMessage(v);
   }, this);
+};
+MessageList.prototype.getAllMessages = function(roomName){
+  if(this._messages[roomName]){
+    return this._messages[roomName].slice();
+  }
 };
 MessageList.prototype.removeMultiple = function(roomName, amount){
   if(amount === undefined){

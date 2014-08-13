@@ -73,12 +73,13 @@ form input[type=text] {
     margin-top: 15px;
     margin-bottom:5px;
     float:right;
+    overflow: scroll;
 }
 .chat {
     padding: 5px;
     width: 350px;
     height: 400px;
-    overflow: scoll;
+    overflow: scroll;
     float:left;
     margin-bottom: 5px;
     background-color: #eee;

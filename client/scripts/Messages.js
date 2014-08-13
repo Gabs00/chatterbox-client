@@ -91,3 +91,34 @@ MessageList.prototype.removeMultiple = function(roomName, amount){
   }
   return messages;
 };
+
+var MessageDisplayer = function(messageList, $domElement, cache){
+  this._messageList = messageList;
+  this.$_domElement = $domElement;
+  this._cache = cache;
+
+};
+
+MessageDisplayer.prototype = {};
+MessageDisplayer.prototype.updateDisplay = function(room, lastRoom){
+    var result = this._messageList.removeMultiple(room);
+    if(lastRoom !== room){
+      var pastMessages = this._cache.getAllMessages(room);
+      $('.chat').empty();
+      _.each(pastMessages, function(v){
+        $('.chat').append('<li>' + v.username + ': ' + v.text + '</li>');
+      });
+    }
+    
+    if(result && result.length > 0){
+      _.each(result, function(v){
+        this._cache.addMessage(v);
+        if(this._cache._messages[room].length > 15){
+          this._cache.removeMessageFromTop(room);
+        }
+        $('.chat').append('<li>' + v.username + ': ' + v.text + '</li>');
+      });
+      
+    }
+    return room;
+};

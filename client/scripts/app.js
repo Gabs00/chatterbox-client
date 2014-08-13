@@ -6,19 +6,23 @@ window.app.RoomHistory = new MessageList();
 window.room = 'lobby';
 window.app.username = prompt('Please enter a username');
 var lastRoom = room;
+window.app.friends = {};
 $(document).ready(function(){
   p = window.app.parse;
   mlist = window.app.MessageList;
   rlist = window.app.RoomHistory;
-
+  friends = Friends();
   
-
+  init();
   setInterval(function(){
     display();
   },3000);
-  p.asyncLoop(p.getMessages, messageAdder, 5000);
+  p.asyncLoop(p.getMessages, messageAdder, 5000, [p.createdAtFilter()]);
 
   
+  $('.chat').on('click', '.username', function(){
+    friends.addFriend($(this).html());
+  });
 
   $('.rooms').on('click', 'li', function(e){
     room = $(this).html();
@@ -32,6 +36,7 @@ $(document).ready(function(){
   $('form').on('submit', function(event){
     event.preventDefault();
     var text = $('.mess').val();
+    $('.mess').val('');
     console.log(text);
     send(text);
   });
@@ -53,7 +58,7 @@ var display = function(){
         if(rlist._messages[room].length > 15){
           rlist.removeMessageFromTop(room);
         }
-        $('.chat').append('<li>' + v.username + ': ' + v.text + '</li>');
+        $('.chat').append('<li><span class="username">' + v.username + '</span>: ' + v.text + '</li>');
       });
       
     }
@@ -61,10 +66,11 @@ var display = function(){
   };
 function messageAdder(array){
   mlist.multipleAdd(array);
-  getRooms();
+  getRooms(friends);
 }
-function getRooms(){
+function getRooms(friends){
   var rooms = Object.keys(mlist._messages);
+  rooms.concat(friends.list);
   $('.rooms').empty();
   _.each(rooms, function(v){
     $('.rooms').append('<li>'+v+'</li>');
@@ -75,3 +81,42 @@ var send = function(text){
   p.sendMessage(mess.prepare(), console.log);
   p.getMessages(messageAdder);
 };
+var init = function(){
+  p.getMessages(messageAdder, p.createdAtFilter());
+  display();
+};
+
+var Friends = function($displayArea){
+  var friends = {};
+  var un;
+  function addMessages(array){
+    _.each(array,function(v){
+      friends[un].push(v);
+    });
+    display(un);
+  }
+  var addFriend = function(username){
+    un =username;
+    friends[username] = [];
+    var friendQuery = {
+      username: un,
+    };
+    console.log(JSON.stringify(friendQuery));
+    p.getMessages(addMessages, friendQuery);
+  };
+  var display = function(username){
+    $($displayArea).empty();
+    _.each(friends[username], function(v){
+      $('.chat').append('<li><span class="username">' + v.username + '</span>: ' + v.text + '</li>');
+    });
+  };
+  return {
+    addFriend: addFriend,
+    display: display,
+    list: function(){return Object.keys(friends);}
+  };
+};
+
+/*
+look at ajax data attribute
+*/
